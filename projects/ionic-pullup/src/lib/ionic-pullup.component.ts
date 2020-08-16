@@ -26,6 +26,7 @@ export interface FooterMetadata {
   toolbarUpperBoundary?: number;
   toolbarLowerBoundary?: number;
   ionContentRef?: any;
+  maxIonContentHeight?:number;
 }
 
 export interface ViewMetadata {
@@ -90,6 +91,8 @@ export class IonicPullupComponent implements OnInit, AfterContentInit, OnChanges
    */
   @Input() minBottomVisible = 0;
 
+  @Input() maxHeight = 0;
+
   /**
    * If true, footer can be docked at the bottom
    */
@@ -142,6 +145,7 @@ export class IonicPullupComponent implements OnInit, AfterContentInit, OnChanges
 
     // compute min boundary of toolbar depending on whether drawer is dockable
     this.footerMeta.toolbarLowerBoundary = this.dockable ? this.minBottomVisible : 0;
+    this.footerMeta.maxIonContentHeight = this.maxHeight ? this.maxHeight - this.minBottomVisible : 1200
   }
 
   ngAfterContentInit() {
@@ -199,7 +203,9 @@ export class IonicPullupComponent implements OnInit, AfterContentInit, OnChanges
 
   expand() {
     this.footerMeta.lastPosY = this.footerMeta.toolbarDefaultExpandedPosition;
-
+    if(this.footerMeta.lastPosY < (-this.footerMeta.maxIonContentHeight)){
+      this.footerMeta.lastPosY = -this.footerMeta.maxIonContentHeight;
+    }
     // reset ionContent scaling
     this.updateIonContentHeight(this.minBottomVisible - this.footerMeta.lastPosY);
 
@@ -270,6 +276,9 @@ export class IonicPullupComponent implements OnInit, AfterContentInit, OnChanges
     switch (e.type) {
       case 'pan':
         this.footerMeta.posY = e.deltaY + this.footerMeta.lastPosY;
+        if(this.footerMeta.posY < (-this.footerMeta.maxIonContentHeight)){
+          this.footerMeta.posY = -this.footerMeta.maxIonContentHeight;
+        }
 
         // check for min and max boundaries of draggable toolbar
         this.footerMeta.posY = this.footerMeta.posY > this.footerMeta.toolbarLowerBoundary ? this.footerMeta.toolbarLowerBoundary :
